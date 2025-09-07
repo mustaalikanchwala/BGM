@@ -15,7 +15,7 @@ import { hashPassword } from '../utils/auth'
 
 export default function AdminDashboard() {
   const router = useRouter()
-  
+
   // STATE: User and data management
   const [user, setUser] = useState(null)
   const [members, setMembers] = useState([])
@@ -24,13 +24,13 @@ export default function AdminDashboard() {
   const [duties, setDuties] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('members')
-  
+
   // STATE: Modal management
   const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
   const [showAddDutyModal, setShowAddDutyModal] = useState(false)
   const [showMemberDetailModal, setShowMemberDetailModal] = useState(false)
-  
+
   // STATE: Forms
   const [memberForm, setMemberForm] = useState({
     its_id: '', email: '', full_name: '', phone: '', member_type: 'member', password: ''
@@ -46,12 +46,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     const userData = localStorage.getItem('user')
     const userType = localStorage.getItem('userType')
-    
+
     if (!userData || userType !== 'admin') {
       router.push('/')
       return
     }
-    
+
     const parsedUser = JSON.parse(userData)
     setUser(parsedUser)
     loadAllData()
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   const loadAllData = async () => {
     try {
       setLoading(true)
-      
+
       // Load members
       const { data: membersData, error: membersError } = await supabase
         .from('members')
@@ -100,41 +100,41 @@ export default function AdminDashboard() {
   }
 
   // Add new member - CORRECTED VERSION
-const handleAddMember = async () => {
-  try {
-    // Hash the password first
-    const hashedPassword = await hashPassword(memberForm.password)
-    
-    // Insert member with correct field names
-    const { data, error } = await supabase
-      .from('members')
-      .insert([
-        {
-          its_id: memberForm.its_id,
-          email: memberForm.email.toLowerCase(),
-          password_hash: hashedPassword,  // Use password_hash, not password
-          full_name: memberForm.full_name,
-          phone: memberForm.phone,
-          member_type: memberForm.member_type,
-          is_active: true,
-          registration_status: 'active'
-        }
-      ])
-      .select()
+  const handleAddMember = async () => {
+    try {
+      // Hash the password first
+      const hashedPassword = await hashPassword(memberForm.password)
 
-    if (error) throw error
-    
-    setMembers([data[0], ...members])
-    setShowAddMemberModal(false)
-    setMemberForm({ its_id: '', email: '', full_name: '', phone: '', member_type: 'member', password: '' })
-    
-    alert('Member added successfully!')
-    
-  } catch (error) {
-    console.error('Error adding member:', error)
-    alert('Error adding member: ' + error.message)
+      // Insert member with correct field names
+      const { data, error } = await supabase
+        .from('members')
+        .insert([
+          {
+            its_id: memberForm.its_id,
+            email: memberForm.email.toLowerCase(),
+            password_hash: hashedPassword,  // Use password_hash, not password
+            full_name: memberForm.full_name,
+            phone: memberForm.phone,
+            member_type: memberForm.member_type,
+            is_active: true,
+            registration_status: 'active'
+          }
+        ])
+        .select()
+
+      if (error) throw error
+
+      setMembers([data[0], ...members])
+      setShowAddMemberModal(false)
+      setMemberForm({ its_id: '', email: '', full_name: '', phone: '', member_type: 'member', password: '' })
+
+      alert('Member added successfully!')
+
+    } catch (error) {
+      console.error('Error adding member:', error)
+      alert('Error adding member: ' + error.message)
+    }
   }
-}
 
   // Add payment
   const handleAddPayment = async () => {
@@ -156,11 +156,11 @@ const handleAddMember = async () => {
         `)
 
       if (error) throw error
-      
+
       setPayments([data[0], ...payments])
       setShowAddPaymentModal(false)
       setPaymentForm({ member_id: '', total_due_yearly: '', transaction_amount: '', payment_date: '', payment_method: '' })
-      
+
     } catch (error) {
       console.error('Error adding payment:', error)
       alert('Error adding payment: ' + error.message)
@@ -185,11 +185,11 @@ const handleAddMember = async () => {
         `)
 
       if (error) throw error
-      
+
       setDuties([data[0], ...duties])
       setShowAddDutyModal(false)
       setDutyForm({ member_id: '', duty_title: '', duty_description: '', duty_date: '', duty_time_start: '', duty_time_end: '', duty_location: '' })
-      
+
     } catch (error) {
       console.error('Error adding duty:', error)
       alert('Error adding duty: ' + error.message)
@@ -207,9 +207,9 @@ const handleAddMember = async () => {
         .eq('id', memberId)
 
       if (error) throw error
-      
+
       setMembers(members.filter(m => m.id !== memberId))
-      
+
     } catch (error) {
       console.error('Error deleting member:', error)
       alert('Error deleting member: ' + error.message)
@@ -220,20 +220,20 @@ const handleAddMember = async () => {
   const viewMemberDetails = async (member) => {
     setSelectedMember(member)
     setShowMemberDetailModal(true)
-    
+
     // Load member's payments and duties
     try {
       const [paymentsRes, dutiesRes] = await Promise.all([
         supabase.from('payments').select('*').eq('member_id', member.id),
         supabase.from('duties').select('*').eq('member_id', member.id)
       ])
-      
+
       setSelectedMember({
         ...member,
         payments: paymentsRes.data || [],
         duties: dutiesRes.data || []
       })
-      
+
     } catch (error) {
       console.error('Error loading member details:', error)
     }
@@ -256,12 +256,12 @@ const handleAddMember = async () => {
 
   return (
     <div className="min-h-screen bg-cream">
-      
+
       {/* HEADER NAVIGATION */}
       <div className="bg-white shadow-lg border-b-4 border-brown">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20">
-            
+
             {/* Logo and Title */}
             <div className="flex items-center">
               <h1 className="text-2xl sm:text-3xl font-bold text-brown">
@@ -274,15 +274,15 @@ const handleAddMember = async () => {
               <div className="hidden sm:block text-sm text-gray-600">
                 Admin: <span className="font-semibold text-brown">{user?.full_name}</span>
               </div>
-              
-              <Link 
+
+              <Link
                 href="/member-dashboard"
                 className="bg-gold text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600 transition-colors duration-300"
               >
                 Member View
               </Link>
-              
-              <button 
+
+              <button
                 onClick={handleLogout}
                 className="bg-brown text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-900 transition-colors duration-300"
               >
@@ -295,7 +295,7 @@ const handleAddMember = async () => {
 
       {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        
+
         {/* STATISTICS CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-gold">
@@ -349,11 +349,10 @@ const handleAddMember = async () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-2 border-b-2 font-medium text-sm capitalize transition-colors duration-300 ${
-                    activeTab === tab
+                  className={`py-4 px-2 border-b-2 font-medium text-sm capitalize transition-colors duration-300 ${activeTab === tab
                       ? 'border-brown text-brown'
                       : 'border-transparent text-gray-500 hover:text-brown hover:border-gray-300'
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -363,7 +362,7 @@ const handleAddMember = async () => {
 
           {/* TAB CONTENT */}
           <div className="p-6 sm:p-8">
-            
+
             {/* MEMBERS TAB */}
             {activeTab === 'members' && (
               <div className="space-y-6">
@@ -388,7 +387,7 @@ const handleAddMember = async () => {
                           <p className="text-sm text-gray-600">Email: {member.email}</p>
                           <p className="text-sm text-gray-600">Phone: {member.phone || 'N/A'}</p>
                         </div>
-                        
+
                         <div className="flex flex-col space-y-2">
                           <button
                             onClick={() => viewMemberDetails(member)}
@@ -444,11 +443,10 @@ const handleAddMember = async () => {
                           <td className="px-4 py-3 text-sm text-gray-900">₹{payment.transaction_amount?.toLocaleString()}</td>
                           <td className="px-4 py-3 text-sm text-gray-900">{payment.payment_method || 'N/A'}</td>
                           <td className="px-4 py-3 text-sm">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              payment.payment_status === 'completed' 
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${payment.payment_status === 'completed'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-yellow-100 text-yellow-800'
-                            }`}>
+                              }`}>
                               {payment.payment_status}
                             </span>
                           </td>
@@ -480,13 +478,12 @@ const handleAddMember = async () => {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
                             <h4 className="font-semibold text-brown text-lg">{duty.duty_title}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              duty.duty_status === 'completed' 
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${duty.duty_status === 'completed'
                                 ? 'bg-green-100 text-green-800'
                                 : duty.duty_status === 'assigned'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
                               {duty.duty_status}
                             </span>
                           </div>
@@ -518,7 +515,7 @@ const handleAddMember = async () => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-96 overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-semibold text-brown mb-4">Add New Member</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ITS ID</label>
@@ -530,7 +527,7 @@ const handleAddMember = async () => {
                     placeholder="Enter ITS ID"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input
@@ -614,7 +611,7 @@ const handleAddMember = async () => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-96 overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-semibold text-brown mb-4">Add Payment</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Member</label>
@@ -705,7 +702,7 @@ const handleAddMember = async () => {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-96 overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-semibold text-brown mb-4">Assign Duty</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Member</label>
@@ -765,7 +762,7 @@ const handleAddMember = async () => {
                       className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brown focus:border-brown"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
                     <input
@@ -826,7 +823,7 @@ const handleAddMember = async () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
+
                 {/* Member Info */}
                 <div>
                   <h4 className="font-semibold text-brown mb-3">Personal Information</h4>
@@ -866,11 +863,10 @@ const handleAddMember = async () => {
                             <span className="font-medium">{duty.duty_title}</span>
                             <span className="text-gray-500 ml-2">{new Date(duty.duty_date).toLocaleDateString()}</span>
                           </div>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            duty.duty_status === 'completed' 
+                          <span className={`px-2 py-1 rounded-full text-xs ${duty.duty_status === 'completed'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-blue-100 text-blue-800'
-                          }`}>
+                            }`}>
                             {duty.duty_status}
                           </span>
                         </div>
